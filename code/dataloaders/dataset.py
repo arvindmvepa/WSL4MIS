@@ -57,9 +57,6 @@ class BaseDataSets(Dataset):
 
     def __getitem__(self, idx):
         case = self.sample_list[idx]
-        print(f"output: {case}")
-        import sys
-        sys.stdout.flush()
         if self.split == "train":
             h5f = h5py.File(case, 'r')
         else:
