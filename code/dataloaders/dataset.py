@@ -35,8 +35,7 @@ def pseudo_label_generator_acdc(data, seed, beta=100, mode='bf'):
 
 
 class BaseDataSets(Dataset):
-    def __init__(self,  split='train', transform=None, sup_type="label", train_file="train.txt",
-                 val_file="val.txt"):
+    def __init__(self,  split='train', transform=None, sup_type="label", train_file="train.txt", val_file="val.txt"):
         self.sample_list = []
         self.split = split
         self.sup_type = sup_type
