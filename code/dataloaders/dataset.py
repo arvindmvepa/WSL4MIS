@@ -35,7 +35,8 @@ def pseudo_label_generator_acdc(data, seed, beta=100, mode='bf'):
 
 
 class BaseDataSets(Dataset):
-    def __init__(self,  split='train', transform=None, sup_type="label", train_file="train.txt", val_file="val.txt"):
+    def __init__(self,  split='train', transform=None, sup_type="label", train_file="train.txt", val_file="val.txt",
+                 data_root="."):
         self.sample_list = []
         self.split = split
         self.sup_type = sup_type
@@ -49,6 +50,8 @@ class BaseDataSets(Dataset):
             with open(val_file) as f:
                 self.all_volumes = f.read().splitlines()
             self.sample_list = self.all_volumes
+
+        self.sample_list = [os.path.join(data_root, im_path) for im_path in self.sample_list]
 
         print("total {} samples".format(len(self.sample_list)))
 
