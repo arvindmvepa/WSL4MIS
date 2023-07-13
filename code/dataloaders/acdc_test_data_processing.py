@@ -40,7 +40,7 @@ for case in mask_path:
     image = (image - image.min()) / (image.max() - image.min())
     print(image.shape)
     image = image.astype(np.float32)
-    item = re.split('/|\\', case)[-1].split(".")[0].replace("_gt", "")
+    item = re.split(r'/|\\', case)[-1].split(".")[0].replace("_gt", "")
     if image.shape != label.shape:
         print("Error")
     print(item)
