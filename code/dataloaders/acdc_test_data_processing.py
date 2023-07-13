@@ -3,6 +3,7 @@ import glob
 import h5py
 import numpy as np
 import SimpleITK as sitk
+import re
 
 # saving images in volume level
 
@@ -39,7 +40,7 @@ for case in mask_path:
     image = (image - image.min()) / (image.max() - image.min())
     print(image.shape)
     image = image.astype(np.float32)
-    item = case.split("/")[-1].split(".")[0].replace("_gt", "")
+    item = re.split('/|\\', case)[-1].split(".")[0].replace("_gt", "")
     if image.shape != label.shape:
         print("Error")
     print(item)
@@ -48,7 +49,6 @@ for case in mask_path:
     f.creatse_dataset(
         'image', data=image, compression="gzip")
     f.create_dataset('label', data=label, compression="gzip")
-    f.create_dataset('scribble', data=scribble, compression="gzip")
     f.close()
     slice_num += 1
 print("Converted all ACDC volumes to 2D slices")
