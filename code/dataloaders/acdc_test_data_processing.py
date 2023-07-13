@@ -26,7 +26,7 @@ class MedicalImageDeal(object):
 
 slice_num = 0
 mask_path = sorted(
-    glob.glob(r"C:\Users\avepa\Documents\al_seg_project\al-seg\wsl4mis_data\ACDC\ACDC_test_raw\*_gt.nii.gz"))
+    glob.glob("./wsl4mis_data/ACDC/ACDC_test_raw/*_gt.nii.gz"))
 for case in mask_path:
     label_itk = sitk.ReadImage(case)
     label = sitk.GetArrayFromImage(label_itk)
@@ -44,7 +44,7 @@ for case in mask_path:
         print("Error")
     print(item)
     f = h5py.File(
-        r'C:\Users\avepa\Documents\al_seg_project\al-seg\wsl4mis_data\ACDC\ACDC_testing_volumes\{}.h5'.format(item), 'w')
+        './wsl4mis_data/ACDC/ACDC_testing_volumes/{}.h5'.format(item), 'w')
     f.creatse_dataset(
         'image', data=image, compression="gzip")
     f.create_dataset('label', data=label, compression="gzip")
