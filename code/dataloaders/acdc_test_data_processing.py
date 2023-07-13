@@ -46,7 +46,7 @@ for case in mask_path:
     print(item)
     f = h5py.File(
         './wsl4mis_data/ACDC/ACDC_testing_volumes/{}.h5'.format(item), 'w')
-    f.creatse_dataset(
+    f.create_dataset(
         'image', data=image, compression="gzip")
     f.create_dataset('label', data=label, compression="gzip")
     f.close()
