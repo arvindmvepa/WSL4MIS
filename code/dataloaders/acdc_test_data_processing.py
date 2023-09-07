@@ -36,10 +36,6 @@ for case in mask_path:
     image_itk = sitk.ReadImage(image_path)
     image = sitk.GetArrayFromImage(image_itk)
 
-    scribble_path = case.replace("_gt", "_scribble")
-    scribble_itk = sitk.ReadImage(scribble_path)
-    scribble = sitk.GetArrayFromImage(scribble_itk)
-
     image = MedicalImageDeal(image, percent=0.99).valid_img
     image = (image - image.min()) / (image.max() - image.min())
     print(image.shape)
@@ -54,8 +50,6 @@ for case in mask_path:
         f.create_dataset(
             'image', data=image[slice_ind], compression="gzip")
         f.create_dataset('label', data=label[slice_ind], compression="gzip")
-        f.create_dataset(
-            'scribble', data=scribble[slice_ind], compression="gzip")
         f.close()
         slice_num += 1
 print("Converted all raw ACDC volumes to 2D slices")
