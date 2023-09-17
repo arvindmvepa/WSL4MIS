@@ -27,10 +27,10 @@ def dice_loss1(score, target):
     return loss
 
 
-def entropy_loss(p, C=2):
+def entropy_loss(p, C=2, gpus='cuda:0'):
     # p N*C*W*H*D
     y1 = -1*torch.sum(p*torch.log(p+1e-6), dim=1) / \
-        torch.tensor(np.log(C)).cuda()
+        torch.tensor(np.log(C), dtype=torch.float32).to(gpus)
     ent = torch.mean(y1)
 
     return ent
@@ -56,9 +56,9 @@ def softmax_dice_loss(input_logits, target_logits):
     return mean_dice
 
 
-def entropy_loss_map(p, C=2):
+def entropy_loss_map(p, C=2, gpus='cuda:0'):
     ent = -1*torch.sum(p * torch.log(p + 1e-6), dim=1,
-                       keepdim=True)/torch.tensor(np.log(C)).cuda()
+                       keepdim=True)/torch.tensor(np.log(C)).to(gpus)
     return ent
 
 
