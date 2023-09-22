@@ -6,7 +6,6 @@ from collections import defaultdict
 from glob import glob
 
 import h5py
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from scipy import ndimage
@@ -17,24 +16,22 @@ from torchvision import transforms
 
 
 class BaseDataSets_s2l(Dataset):
-    def __init__(self, base_dir=None, transform=None, fold="fold1", num=None):
-        self._base_dir = base_dir
+    def __init__(self, split="train", train_file="train.txt", transform=None, data_root="."):
         self.sample_list = []
         self.transform = transform
-        train_ids, test_ids = self._get_fold_ids(fold)
-        self.all_slices = os.listdir(self._base_dir + "/ACDC_training_slices")
-        self.sample_list = []
-        for ids in train_ids:
-            new_data_list = list(filter(lambda x: re.match(
-                '{}.*'.format(ids), x) != None, self.all_slices))
-            self.sample_list.extend(new_data_list)
+        self.split = split
+        if self.split == 'train':
+            with open(train_file) as f:
+                self.all_slices = f.read().splitlines()
+            self.sample_list = self.all_slices
+
+        self.sample_list = [os.path.join(data_root, im_path) for im_path in self.sample_list]
 
         print("total {} samples".format(len(self.sample_list)))
 
         self.images = defaultdict(dict)
         for idx, case in enumerate(self.sample_list):
-            h5f = h5py.File(self._base_dir +
-                            "/ACDC_training_slices/{}".format(case), 'r')
+            h5f = h5py.File(case, 'r')
             img = h5f['image']
             mask = h5f['label']
             scr = h5f['scribble']
@@ -45,50 +42,10 @@ class BaseDataSets_s2l(Dataset):
             h, w = mask.shape
             self.images[idx]['weight'] = np.zeros((h, w, 4), dtype=np.float32)
 
-    def _get_fold_ids(self, fold):
-        all_cases_set = ["patient{:0>3}".format(i) for i in range(1, 101)]
-        fold1_testing_set = [
-            "patient{:0>3}".format(i) for i in range(1, 21)]
-        fold1_training_set = [
-            i for i in all_cases_set if i not in fold1_testing_set]
-
-        fold2_testing_set = [
-            "patient{:0>3}".format(i) for i in range(21, 41)]
-        fold2_training_set = [
-            i for i in all_cases_set if i not in fold2_testing_set]
-
-        fold3_testing_set = [
-            "patient{:0>3}".format(i) for i in range(41, 61)]
-        fold3_training_set = [
-            i for i in all_cases_set if i not in fold3_testing_set]
-
-        fold4_testing_set = [
-            "patient{:0>3}".format(i) for i in range(61, 81)]
-        fold4_training_set = [
-            i for i in all_cases_set if i not in fold4_testing_set]
-
-        fold5_testing_set = [
-            "patient{:0>3}".format(i) for i in range(81, 101)]
-        fold5_training_set = [
-            i for i in all_cases_set if i not in fold5_testing_set]
-        if fold == "fold1":
-            return [fold1_training_set, fold1_testing_set]
-        elif fold == "fold2":
-            return [fold2_training_set, fold2_testing_set]
-        elif fold == "fold3":
-            return [fold3_training_set, fold3_testing_set]
-        elif fold == "fold4":
-            return [fold4_training_set, fold4_testing_set]
-        elif fold == "fold5":
-            return [fold5_training_set, fold5_testing_set]
-        else:
-            return "ERROR KEY"
-
     def __len__(self):
         return len(self.sample_list)
 
     def __getitem__(self, idx):
-        case = self.images[idx]['id']
         image = self.images[idx]['image']
         mask = self.images[idx]['mask']
         scribble = self.images[idx]['scribble']
@@ -96,7 +53,7 @@ class BaseDataSets_s2l(Dataset):
         sample = {'image': image, 'mask': mask,
                   'scribble': scribble, 'weight': weight}
         sample = self.transform(sample)
-        sample['id'] = case
+        sample['idx'] = idx
         return sample
 
 
