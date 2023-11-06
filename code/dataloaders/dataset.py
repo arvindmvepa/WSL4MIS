@@ -60,22 +60,19 @@ class BaseDataSets(Dataset):
 
     def __getitem__(self, idx):
         case = self.sample_list[idx]
-        if self.split == "train":
-            h5f = h5py.File(case, 'r')
-        else:
-            h5f = h5py.File(case, 'r')
-        if self.split == "train":
-            image = h5f['image'][:]
-            if self.sup_type == "random_walker":
-                label = pseudo_label_generator_acdc(image, h5f["scribble"][:])
+        with h5py.File(case, 'r') as h5f:  # Using 'with' ensures the file is automatically closed after the block
+            if self.split == "train":
+                image = h5f['image'][:]
+                if self.sup_type == "random_walker":
+                    label = pseudo_label_generator_acdc(image, h5f["scribble"][:])
+                else:
+                    label = h5f[self.sup_type][:]
+                sample = {'image': image, 'label': label}
+                sample = self.transform(sample)
             else:
-                label = h5f[self.sup_type][:]
-            sample = {'image': image, 'label': label}
-            sample = self.transform(sample)
-        else:
-            image = h5f['image'][:]
-            label = h5f['label'][:]
-            sample = {'image': image, 'label': label}
+                image = h5f['image'][:]
+                label = h5f['label'][:]
+                sample = {'image': image, 'label': label}
         sample["idx"] = idx
         return sample
 
