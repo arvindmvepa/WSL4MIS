@@ -1,2 +1,2 @@
-val_volumes/patient_25.h5
-val_volumes/patient_8.h5
+val_volumes/patient_14.h5
+val_volumes/patient_2.h5
