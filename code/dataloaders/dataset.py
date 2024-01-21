@@ -4,10 +4,12 @@ import random
 import h5py
 import numpy as np
 import torch
+import cv2
 from scipy import ndimage
 from scipy.ndimage.interpolation import zoom
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
+from skimage.morphology import skeletonize, dilation, closing
 
 
 def pseudo_label_generator_acdc(data, seed, beta=100, mode='bf'):
@@ -35,7 +37,6 @@ def generate_skeleton_scribble(mask):
     :param mask: multi-channel binary mask
     :return: scribbles
     """
-    from skimage.morphology import skeletonize, dilation, closing
     # initialize scribbles as empty array
     scribbles = np.zeros_like(mask)
     assert len(mask.shape) == 2 and len(np.unique(mask)) <= 2, "only works for binary masks"
@@ -50,6 +51,32 @@ def generate_skeleton_scribble(mask):
     scribbles[...] = skl
 
     return scribbles
+
+
+def generate_countor_scribble(mask, epsilon=1.0):
+    """ Scribbles are approximated by a counter of the image (only works for binary masks)
+    :param mask: multi-channel binary mask
+    :return: scribbles
+    """
+    assert len(mask.shape) == 2 and len(np.unique(mask)) <= 2, "only works for binary masks"
+    # Find contours in the mask
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Simplify contours
+    simplified_contours = [cv2.approxPolyDP(contour, epsilon, True) for contour in contours]
+
+    # Create an empty image to draw simplified contours
+    scribble_img = np.zeros_like(mask)
+
+    # Draw the simplified contours
+    scribble_img = cv2.drawContours(scribble_img, simplified_contours, -1, (255, 255, 255), 1)
+    binary_scribble_img = scribble_img // 255
+
+    # make slightly thicker (but always inside the gt mask)
+    binary_scribble_img = closing(binary_scribble_img)
+    binary_scribble_img = dilation(binary_scribble_img) * mask
+
+    return binary_scribble_img
 
 
 class BaseDataSets(Dataset):
@@ -87,6 +114,8 @@ class BaseDataSets(Dataset):
                 if self.scribble_gen:
                     if self.scribble_gen == "skeleton":
                         label = generate_skeleton_scribble(h5f["label"][:])
+                    elif self.scribble_gen == "contour":
+                        label = generate_countor_scribble(h5f["label"][:])
                     else:
                         raise ValueError(f"Value of self.scribble_gen: {self.scribble_gen} is not supported")
                 else:
