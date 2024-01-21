@@ -103,7 +103,8 @@ def train(args, snapshot_path):
         for i_batch, sampled_batch in enumerate(trainloader):
 
             volume_batch, label_batch = sampled_batch['image'], sampled_batch['label']
-            volume_batch, label_batch = volume_batch.cuda(), label_batch.cuda()
+            volume_batch, label_batch = volume_batch.
+            (), label_batch.cuda()
 
             outputs, outputs_aux1 = model(
                 volume_batch)

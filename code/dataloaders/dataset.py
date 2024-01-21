@@ -1,10 +1,6 @@
 import itertools
 import os
 import random
-import re
-from glob import glob
-
-import cv2
 import h5py
 import numpy as np
 import torch
@@ -34,12 +30,40 @@ def pseudo_label_generator_acdc(data, seed, beta=100, mode='bf'):
     return pseudo_label
 
 
+def generate_skeleton_scribble(mask):
+    """ Scribbles are approximated by a skeleton of the image
+    :param mask: multi-channel binary mask
+    :return: scribbles
+    """
+    from skimage.morphology import skeletonize, dilation, closing
+    # initialize scribbles as empty array
+    scribbles = np.zeros_like(mask)
+    n_channels = mask.shape[-1]
+
+    for ch in range(n_channels):
+        # extract skeleton from the current channel
+        m = np.copy(mask[:, :, ch])
+        skl = skeletonize(m)
+
+        # make slightly thicker (but always inside the gt mask)
+        skl = closing(skl)
+        skl = dilation(skl) * m
+
+        # assign skeleton to return array
+        scribbles[..., ch] = skl
+
+    return scribbles
+
+
 class BaseDataSets(Dataset):
     def __init__(self,  split='train', transform=None, sup_type="label", train_file="train.txt", val_file="val.txt",
-                 data_root="."):
+                 data_root=".", scribble_gen=None):
         self.sample_list = []
         self.split = split
         self.sup_type = sup_type
+        self.scribble_gen = scribble_gen
+        if self.scribble_gen:
+            print(f"Using scribble_gen: {self.scribble_gen}")
         self.transform = transform
         if self.split == 'train':
             with open(train_file) as f:
@@ -63,8 +87,11 @@ class BaseDataSets(Dataset):
         with h5py.File(case, 'r') as h5f:  # Using 'with' ensures the file is automatically closed after the block
             if self.split == "train":
                 image = h5f['image'][:]
-                if self.sup_type == "random_walker":
-                    label = pseudo_label_generator_acdc(image, h5f["scribble"][:])
+                if self.scribble_gen:
+                    if self.scribble_gen == "skeleton":
+                        label = generate_skeleton_scribble(h5f["label"][:])
+                    else:
+                        raise ValueError(f"Value of self.scribble_gen: {self.scribble_gen} is not supported")
                 else:
                     label = h5f[self.sup_type][:]
                 sample = {'image': image, 'label': label}
