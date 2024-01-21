@@ -31,26 +31,23 @@ def pseudo_label_generator_acdc(data, seed, beta=100, mode='bf'):
 
 
 def generate_skeleton_scribble(mask):
-    """ Scribbles are approximated by a skeleton of the image
+    """ Scribbles are approximated by a skeleton of the image (only works for binary masks)
     :param mask: multi-channel binary mask
     :return: scribbles
     """
     from skimage.morphology import skeletonize, dilation, closing
     # initialize scribbles as empty array
     scribbles = np.zeros_like(mask)
-    n_channels = mask.shape[-1]
+    assert len(mask.shape) == 2 and len(np.unique(mask)) <= 2, "only works for binary masks"
+    m = np.copy(mask[:, :])
+    skl = skeletonize(m)
 
-    for ch in range(n_channels):
-        # extract skeleton from the current channel
-        m = np.copy(mask[:, :, ch])
-        skl = skeletonize(m)
+    # make slightly thicker (but always inside the gt mask)
+    skl = closing(skl)
+    skl = dilation(skl) * m
 
-        # make slightly thicker (but always inside the gt mask)
-        skl = closing(skl)
-        skl = dilation(skl) * m
-
-        # assign skeleton to return array
-        scribbles[..., ch] = skl
+    # assign skeleton to return array
+    scribbles[...] = skl
 
     return scribbles
 
