@@ -199,13 +199,16 @@ def scrible_2d(label, iteration=[4, 10]):
 
 
 def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=True):
+    print("Generating scribble for class {}".format(class_id))
     label = (label == class_id)
     sk_map = scrible_2d(label, iteration=iteration)
+    print("sk_map.shape: {}, sk_map sum: {}".format(sk_map.shape, np.sum(sk_map)))
     if cut_branch and class_id != 0:
         cut = Cutting_branch()
         lab = sk_map
         if not (lab.sum() < 1):
             sk_map = cut(lab, seg_lab=label)
+        print("after cut, sk_map.shape: {}, sk_map sum: {}".format(sk_map.shape, np.sum(sk_map)))
     if class_id == 0:
         class_id = class_num
     return sk_map * class_id
@@ -214,6 +217,7 @@ def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=Tru
 def generate_cutting_scribble(label, cut_branch=True):
     class_num = np.max(label) + 1
     output = np.zeros_like(label, dtype=np.uint8)
+    print("Generating scribble for cutting branch")
     for i in range(class_num):
         scribble = scribble4class(
             label, i, class_num, cut_branch=cut_branch)
