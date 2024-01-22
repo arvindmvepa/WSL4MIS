@@ -6,7 +6,6 @@ import numpy as np
 import torch
 import cv2
 import math
-import sys
 from scipy import ndimage
 from PIL import Image
 from scipy.ndimage.interpolation import zoom
@@ -185,8 +184,6 @@ def scrible_2d(label, iteration=[4, 10]):
     skeleton_map = np.zeros_like(lab, dtype=np.int32)
     if np.sum(lab) == 0:
         return skeleton_map
-    print("scrible_2d, debug1")
-    sys.stdout.flush()
     struct = ndimage.generate_binary_structure(2, 2)
     if np.sum(lab) > 900 and iteration != 0 and iteration != [0] and iteration != None:
         iter_num = math.ceil(
@@ -195,49 +192,20 @@ def scrible_2d(label, iteration=[4, 10]):
             lab, structure=struct, iterations=iter_num)
     else:
         slic = lab
-    print("scrible_2d, debug2")
-    sys.stdout.flush()
-    print("type(slic): {}".format(type(slic)))
-    sys.stdout.flush()
-    print("np.unique(slic): {}".format(np.unique(slic)))
-    sys.stdout.flush()
-    try:
-        sk_slice = skeletonize(slic, method='lee')
-    except Exception as e:
-        print(e)
-        raise
-    print("scrible_2d, debug3")
-    sys.stdout.flush()
+    sk_slice = skeletonize(slic, method='lee')
     sk_slice = np.asarray((sk_slice == 255), dtype=np.int32)
-    print("np.unique(sk_slice): {}".format(np.unique(sk_slice)))
-    print("scrible_2d, debug4")
-    sys.stdout.flush()
     skeleton_map = sk_slice
-    print("scrible_2d, debug5")
-    sys.stdout.flush()
     return skeleton_map
 
 
 def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=True):
-    print("Generating scribble for class {}".format(class_id))
-    sys.stdout.flush()
     label = (label == class_id)
     sk_map = scrible_2d(label, iteration=iteration)
-    print("sk_map.shape: {}, np.unique(sk_map): {}".format(sk_map.shape, np.unique(sk_map)))
-    sys.stdout.flush()
     if cut_branch and class_id != 0:
         cut = Cutting_branch()
         lab = sk_map
         if not (lab.sum() < 1):
-            print("before cut debug")
-            try:
-                sk_map = cut(lab, seg_lab=label)
-            except Exception as e:
-                print(e)
-                raise
-            print("after cut debug")
-        print("after cut, sk_map.shape: {}, np.unique(sk_map): {}".format(sk_map.shape, np.unique(sk_map)))
-        sys.stdout.flush()
+            sk_map = cut(lab, seg_lab=label)
     if class_id == 0:
         class_id = class_num
     return sk_map * class_id
@@ -246,14 +214,10 @@ def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=Tru
 def generate_cutting_scribble(label, cut_branch=True):
     class_num = np.max(label) + 1
     output = np.zeros_like(label, dtype=np.uint8)
-    print("Generating scribble for cutting branch")
-    print("output.shape: {}".format(output.shape))
-    sys.stdout.flush()
     for i in range(class_num):
         scribble = scribble4class(
             label, i, class_num, cut_branch=cut_branch)
         output += scribble.astype(np.uint8)
-    print("Complete scribble generation for image")
     return output
 
 

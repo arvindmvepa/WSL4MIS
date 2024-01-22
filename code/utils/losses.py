@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from torch.nn import functional as F
-import sys
 
 
 def dice_loss(score, target):
@@ -218,16 +217,6 @@ class pDLoss(nn.Module):
 
     def forward(self, inputs, target, weight=None):
         ignore_mask = torch.ones_like(target)
-        print("debug, ignore_mask.size() = ", ignore_mask.size() )
-        sys.stdout.flush()
-        print("debug, target.size()  = ", target.size() )
-        sys.stdout.flush()
-        torch.set_printoptions(threshold=10_000)
-        print(target)
-        sys.stdout.flush()
-        print("debug, torch.unique(target) = ", torch.unique(target))
-        sys.stdout.flush()
-
         ignore_mask[target == self.ignore_index] = 0
         target = self._one_hot_encoder(target)
         if weight is None:
