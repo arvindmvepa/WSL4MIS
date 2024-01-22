@@ -217,6 +217,9 @@ class pDLoss(nn.Module):
 
     def forward(self, inputs, target, weight=None):
         ignore_mask = torch.ones_like(target)
+        print("debug, torch.shape(ignore_mask) = ", torch.shape(ignore_mask))
+        print("debug, torch.shape(target) = ", torch.shape(target))
+        print("debug, torch.unique(target) = ", torch.unique(target))
         ignore_mask[target == self.ignore_index] = 0
         target = self._one_hot_encoder(target)
         if weight is None:
