@@ -182,20 +182,19 @@ class Cutting_branch(object):
 def scrible_2d(label, iteration=[4, 10]):
     lab = label
     skeleton_map = np.zeros_like(lab, dtype=np.int32)
-    for i in range(lab.shape[0]):
-        if np.sum(lab[i]) == 0:
-            continue
-        struct = ndimage.generate_binary_structure(2, 2)
-        if np.sum(lab[i]) > 900 and iteration != 0 and iteration != [0] and iteration != None:
-            iter_num = math.ceil(
-                iteration[0]+random.random() * (iteration[1]-iteration[0]))
-            slic = ndimage.morphology.binary_erosion(
-                lab[i], structure=struct, iterations=iter_num)
-        else:
-            slic = lab[i]
-        sk_slice = skeletonize(slic, method='lee')
-        sk_slice = np.asarray((sk_slice == 255), dtype=np.int32)
-        skeleton_map[i] = sk_slice
+    if np.sum(lab) == 0:
+        return skeleton_map
+    struct = ndimage.generate_binary_structure(2, 2)
+    if np.sum(lab) > 900 and iteration != 0 and iteration != [0] and iteration != None:
+        iter_num = math.ceil(
+            iteration[0]+random.random() * (iteration[1]-iteration[0]))
+        slic = ndimage.morphology.binary_erosion(
+            lab, structure=struct, iterations=iter_num)
+    else:
+        slic = lab
+    sk_slice = skeletonize(slic, method='lee')
+    sk_slice = np.asarray((sk_slice == 255), dtype=np.int32)
+    skeleton_map = sk_slice
     return skeleton_map
 
 
@@ -204,14 +203,22 @@ def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=Tru
     sk_map = scrible_2d(label, iteration=iteration)
     if cut_branch and class_id != 0:
         cut = Cutting_branch()
-        for i in range(sk_map.shape[0]):
-            lab = sk_map[i]
-            if lab.sum() < 1:
-                continue
-            sk_map[i] = cut(lab, seg_lab=label[i])
+        lab = sk_map
+        if not (lab.sum() < 1):
+            sk_map = cut(lab, seg_lab=label)
     if class_id == 0:
         class_id = class_num
     return sk_map * class_id
+
+
+def generate_cutting_scribble(label, cut_branch=True):
+    class_num = np.max(label) + 1
+    output = np.zeros_like(label, dtype=np.uint8)
+    for i in range(class_num):
+        scribble = scribble4class(
+            label, i, class_num, cut_branch=cut_branch)
+        output += scribble.astype(np.uint8)
+    return output
 
 
 def pseudo_label_generator_acdc(data, seed, beta=100, mode='bf'):
@@ -279,16 +286,6 @@ def generate_countor_scribble(mask, epsilon=1.0):
     binary_scribble_img = dilation(binary_scribble_img) * mask
 
     return binary_scribble_img
-
-
-def generate_cutting_scribble(label, cut_branch=True):
-    class_num = np.max(label) + 1
-    output = np.zeros_like(label, dtype=np.uint8)
-    for i in range(class_num):
-        scribble = scribble4class(
-            label, i, class_num, cut_branch=cut_branch)
-        output += scribble.astype(np.uint8)
-    return output
 
 
 class BaseDataSets(Dataset):
