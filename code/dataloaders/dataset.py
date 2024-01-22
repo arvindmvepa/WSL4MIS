@@ -201,7 +201,11 @@ def scrible_2d(label, iteration=[4, 10]):
     sys.stdout.flush()
     print("np.unique(slic): {}".format(np.unique(slic)))
     sys.stdout.flush()
-    sk_slice = skeletonize(slic, method='lee')
+    try:
+        sk_slice = skeletonize(slic, method='lee')
+    except Exception as e:
+        print(e)
+        raise
     print("scrible_2d, debug3")
     sys.stdout.flush()
     sk_slice = np.asarray((sk_slice == 255), dtype=np.int32)
