@@ -209,6 +209,7 @@ def scrible_2d(label, iteration=[4, 10]):
     print("scrible_2d, debug3")
     sys.stdout.flush()
     sk_slice = np.asarray((sk_slice == 255), dtype=np.int32)
+    print("np.unique(sk_slice): {}".format(np.unique(sk_slice)))
     print("scrible_2d, debug4")
     sys.stdout.flush()
     skeleton_map = sk_slice
@@ -222,7 +223,7 @@ def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=Tru
     sys.stdout.flush()
     label = (label == class_id)
     sk_map = scrible_2d(label, iteration=iteration)
-    print("sk_map.shape: {}, sk_map sum: {}".format(sk_map.shape, np.sum(sk_map)))
+    print("sk_map.shape: {}, np.unique(sk_map): {}".format(sk_map.shape, np.unique(sk_map)))
     sys.stdout.flush()
     if cut_branch and class_id != 0:
         cut = Cutting_branch()
@@ -235,7 +236,7 @@ def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=Tru
                 print(e)
                 raise
             print("after cut debug")
-        print("after cut, sk_map.shape: {}, sk_map sum: {}".format(sk_map.shape, np.sum(sk_map)))
+        print("after cut, sk_map.shape: {}, np.unique(sk_map): {}".format(sk_map.shape, np.unique(sk_map)))
         sys.stdout.flush()
     if class_id == 0:
         class_id = class_num
