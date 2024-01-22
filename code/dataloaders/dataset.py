@@ -197,6 +197,8 @@ def scrible_2d(label, iteration=[4, 10]):
         slic = lab
     print("scrible_2d, debug2")
     sys.stdout.flush()
+    print("type(slic): {}".format(type(slic)))
+    sys.stdout.flush()
     print("np.unique(slic): {}".format(np.unique(slic)))
     sys.stdout.flush()
     sk_slice = skeletonize(slic, method='lee')
