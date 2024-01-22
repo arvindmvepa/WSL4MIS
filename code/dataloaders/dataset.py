@@ -222,11 +222,13 @@ def generate_cutting_scribble(label, cut_branch=True):
     class_num = np.max(label) + 1
     output = np.zeros_like(label, dtype=np.uint8)
     print("Generating scribble for cutting branch")
+    print("output.shape: {}".format(output.shape))
     sys.stdout.flush()
     for i in range(class_num):
         scribble = scribble4class(
             label, i, class_num, cut_branch=cut_branch)
         output += scribble.astype(np.uint8)
+    print("Complete scribble generation for image")
     return output
 
 
