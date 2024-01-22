@@ -185,6 +185,8 @@ def scrible_2d(label, iteration=[4, 10]):
     skeleton_map = np.zeros_like(lab, dtype=np.int32)
     if np.sum(lab) == 0:
         return skeleton_map
+    print("scrible_2d, debug1")
+    sys.stdout.flush()
     struct = ndimage.generate_binary_structure(2, 2)
     if np.sum(lab) > 900 and iteration != 0 and iteration != [0] and iteration != None:
         iter_num = math.ceil(
@@ -193,9 +195,17 @@ def scrible_2d(label, iteration=[4, 10]):
             lab, structure=struct, iterations=iter_num)
     else:
         slic = lab
+    print("scrible_2d, debug2")
+    sys.stdout.flush()
     sk_slice = skeletonize(slic, method='lee')
+    print("scrible_2d, debug3")
+    sys.stdout.flush()
     sk_slice = np.asarray((sk_slice == 255), dtype=np.int32)
+    print("scrible_2d, debug4")
+    sys.stdout.flush()
     skeleton_map = sk_slice
+    print("scrible_2d, debug5")
+    sys.stdout.flush()
     return skeleton_map
 
 
