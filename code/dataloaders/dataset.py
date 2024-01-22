@@ -228,7 +228,13 @@ def scribble4class(label, class_id, class_num, iteration=[4, 10], cut_branch=Tru
         cut = Cutting_branch()
         lab = sk_map
         if not (lab.sum() < 1):
-            sk_map = cut(lab, seg_lab=label)
+            print("before cut debug")
+            try:
+                sk_map = cut(lab, seg_lab=label)
+            except Exception as e:
+                print(e)
+                raise
+            print("after cut debug")
         print("after cut, sk_map.shape: {}, sk_map sum: {}".format(sk_map.shape, np.sum(sk_map)))
         sys.stdout.flush()
     if class_id == 0:
