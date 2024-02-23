@@ -117,7 +117,7 @@ class RandomGenerator(object):
             image = torch.from_numpy(image.astype(np.float32)).unsqueeze(0)
         elif len(image.shape) == 3:
             image = zoom(image, (self.output_size[0] / x, self.output_size[1] / y, 1), order=0)
-            image = torch.from_numpy(image.astype(np.float32)).permute(1, 2, 0)
+            image = torch.from_numpy(image.astype(np.float32)).permute(2, 0, 1)
         else:
             raise ValueError("Invalid input shape")
         label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
