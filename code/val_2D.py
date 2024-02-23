@@ -40,8 +40,7 @@ def test_single_volume(image, label, net, classes, patch_size=[256, 256], gpus="
         for ind in range(image.shape[0]):
             slice = image[ind, :, :, :]
             x, y = slice.shape[0], slice.shape[1]
-            slice = zoom(
-                slice, (patch_size[0] / x, patch_size[1] / y), 1, order=0)
+            slice = zoom(slice, (patch_size[0] / x, patch_size[1] / y, 1), order=0)
             input = torch.from_numpy(slice).permute(2, 0, 1).unsqueeze(0).float().to(gpus)
             net.eval()
             with torch.no_grad():
