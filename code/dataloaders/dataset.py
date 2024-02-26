@@ -74,6 +74,7 @@ class BaseDataSets(Dataset):
                 label = h5f['label'][:]
                 sample = {'image': image, 'label': label}
         sample["idx"] = idx
+        sample["case"] = case
         return sample
 
 
