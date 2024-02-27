@@ -103,7 +103,7 @@ def test_single_volume_ds(image, label, net, classes, patch_size=[256, 256], gpu
     return metric_list
 
 
-def test_single_volume_cct(image, label, net, classes, patch_size=[256, 256], gpus="cuda:0"):
+def test_single_volume_cct(image, label, net, classes, patch_size=[256, 256], gpus="cuda:0", generate=False):
     image, label = image.squeeze(0).cpu().detach(
     ).numpy(), label.squeeze(0).cpu().detach().numpy()
     if len(image.shape) == 3:
@@ -133,6 +133,8 @@ def test_single_volume_cct(image, label, net, classes, patch_size=[256, 256], gp
             out = torch.argmax(torch.softmax(
                 output_main, dim=1), dim=1).squeeze(0)
             prediction = out.cpu().detach().numpy()
+    if generate:
+        return prediction
     metric_list = []
     for i in range(1, classes):
         metric_list.append(calculate_metric_percase(
