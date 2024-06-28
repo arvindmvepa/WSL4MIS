@@ -4,7 +4,8 @@ from medpy import metric
 from scipy.ndimage import zoom
 
 
-def calculate_metric_percase(pred, gt):
+def calculate_metric_percase(pred, gt, random_state=0):
+
     pred[pred > 0] = 1
     gt[gt > 0] = 1
     if pred.sum() > 0 and np.unique(gt).size > 1:
@@ -15,7 +16,30 @@ def calculate_metric_percase(pred, gt):
         return 0, 0
 
 
-def test_single_volume(image, label, net, classes, patch_size=[256, 256], gpus="cuda:0"):
+def calculate_bs_metric_percase(pred, gt, num_bootstraps=1000, seed=0):
+    pred[pred > 0] = 1
+    gt[gt > 0] = 1
+    num_slices = pred.shape[0]
+    bs_results = []
+    for i in range(num_bootstraps):
+        current_seed = seed + i
+        rng = np.random.RandomState(current_seed)
+        sample_slices = rng.choice(np.arange(num_slices), size=num_slices, replace=True)
+        bs_pred = pred[sample_slices]
+        bs_gt = gt[sample_slices]
+        if bs_pred.sum() > 0 and np.unique(bs_gt).size > 1:
+            bs_dice = metric.binary.dc(bs_pred, bs_gt)
+            bs_hd95 = metric.binary.hd95(bs_pred, bs_gt)
+            bs_results.append([bs_dice, bs_hd95])
+        else:
+            bs_results.append([0, 0])
+    bs_results = np.array(bs_results)
+    bs_dice_results = bs_results[:, 0]
+    bs_hd95_results = bs_results[:, 1]
+    return bs_dice_results, bs_hd95_results
+
+
+def test_single_volume(image, label, net, classes, patch_size=[256, 256], num_bootstraps=None, seed=0, gpus="cuda:0"):
     image = image.squeeze(0).cpu().detach().numpy()
     label = label.squeeze(0).cpu().detach().numpy()
     if len(image.shape) == 3:
@@ -61,12 +85,16 @@ def test_single_volume(image, label, net, classes, patch_size=[256, 256], gpus="
             prediction = out.cpu().detach().numpy()
     metric_list = []
     for i in range(1, classes):
-        metric_list.append(calculate_metric_percase(
-            prediction == i, label == i))
+        if isinstance(num_bootstraps, int):
+            bs_dice, bs_hd95 = calculate_bs_metric_percase(prediction == i, label == i, num_bootstraps, seed)
+            metric_list.append([bs_dice, bs_hd95])
+        else:
+            metric_list.append(calculate_metric_percase(prediction == i, label == i))
     return metric_list
 
 
-def test_single_volume_ds(image, label, net, classes, patch_size=[256, 256], gpus="cuda:0"):
+def test_single_volume_ds(image, label, net, classes, patch_size=[256, 256], num_bootstraps=None, seed=0,
+                          gpus="cuda:0"):
     image, label = image.squeeze(0).cpu().detach(
     ).numpy(), label.squeeze(0).cpu().detach().numpy()
     if len(image.shape) == 3:
@@ -98,12 +126,16 @@ def test_single_volume_ds(image, label, net, classes, patch_size=[256, 256], gpu
             prediction = out.cpu().detach().numpy()
     metric_list = []
     for i in range(1, classes):
-        metric_list.append(calculate_metric_percase(
-            prediction == i, label == i))
+        if isinstance(num_bootstraps, int):
+            bs_dice, bs_hd95 = calculate_bs_metric_percase(prediction == i, label == i, num_bootstraps, seed)
+            metric_list.append([bs_dice, bs_hd95])
+        else:
+            metric_list.append(calculate_metric_percase( prediction == i, label == i))
     return metric_list
 
 
-def test_single_volume_cct(image, label, net, classes, patch_size=[256, 256], gpus="cuda:0", generate=False):
+def test_single_volume_cct(image, label, net, classes, patch_size=[256, 256], num_bootstraps=None, seed=0,
+                           gpus="cuda:0", generate=False):
     image, label = image.squeeze(0).cpu().detach(
     ).numpy(), label.squeeze(0).cpu().detach().numpy()
     if len(image.shape) == 3:
@@ -137,6 +169,9 @@ def test_single_volume_cct(image, label, net, classes, patch_size=[256, 256], gp
         return prediction
     metric_list = []
     for i in range(1, classes):
-        metric_list.append(calculate_metric_percase(
-            prediction == i, label == i))
+        if isinstance(num_bootstraps, int):
+            bs_dice, bs_hd95 = calculate_bs_metric_percase(prediction == i, label == i, num_bootstraps, seed)
+            metric_list.append([bs_dice, bs_hd95])
+        else:
+            metric_list.append(calculate_metric_percase( prediction == i, label == i))
     return metric_list
