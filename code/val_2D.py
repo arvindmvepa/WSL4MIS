@@ -21,15 +21,27 @@ def calculate_bs_metric_percase(pred, gt, num_bootstraps=1000, seed=0):
     gt[gt > 0] = 1
     num_slices = pred.shape[0]
     bs_results = []
+    # calculate TP, FP, FN for each slice
+    tp_arr = np.zeros(num_slices)
+    fp_arr = np.zeros(num_slices)
+    fn_arr = np.zeros(num_slices)
+    for i in range(num_slices):
+        tp = np.sum(pred[i] * gt[i])
+        fp = np.sum(pred[i] * (1 - gt[i]))
+        fn = np.sum((1 - pred[i]) * gt[i])
+        tp_arr[i] = tp
+        fp_arr[i] = fp
+        fn_arr[i] = fn
     for i in range(num_bootstraps):
+        bs_hd95 = 0.0
         current_seed = seed + i
         rng = np.random.RandomState(current_seed)
         sample_slices = rng.choice(np.arange(num_slices), size=num_slices, replace=True)
-        bs_pred = pred[sample_slices]
-        bs_gt = gt[sample_slices]
-        if bs_pred.sum() > 0 and np.unique(bs_gt).size > 1:
-            bs_dice = metric.binary.dc(bs_pred, bs_gt)
-            bs_hd95 = metric.binary.hd95(bs_pred, bs_gt)
+        bs_tp, bs_fp, bs_fn = np.sum(tp_arr[sample_slices]), np.sum(fp_arr[sample_slices]), np.sum(fn_arr[sample_slices])
+        bs_dice_numer = 2 * bs_tp
+        bs_dice_denom = bs_dice_numer + bs_fp + bs_fn
+        if bs_dice_denom > 0:
+            bs_dice = bs_dice_numer / bs_dice_denom
             bs_results.append([bs_dice, bs_hd95])
         else:
             bs_results.append([0, 0])
