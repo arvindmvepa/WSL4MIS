@@ -35,11 +35,12 @@ def pseudo_label_generator_acdc(data, seed, beta=100, mode='bf'):
 
 
 class BaseDataSets(Dataset):
-    def __init__(self,  split='train', transform=None, sup_type="label", train_file="train.txt", val_file="val.txt",
-                 data_root="."):
+    def __init__(self,  split='train', transform=None, sup_type="label", in_chns=1, train_file="train.txt",
+                 val_file="val.txt", data_root="."):
         self.sample_list = []
         self.split = split
         self.sup_type = sup_type
+        self.in_chns = in_chns
         self.transform = transform
         if self.split == 'train':
             with open(train_file) as f:
@@ -72,7 +73,12 @@ class BaseDataSets(Dataset):
             else:
                 image = h5f['image'][:]
                 label = h5f['label'][:]
+            if self.in_chns == 3:
+                print("sample[image].shape ", sample['image'].shape)
+                sample['image'] = sample['image'].repeat(3, axis=-1)
                 sample = {'image': image, 'label': label}
+            elif self.in_chns != 1:
+                raise ValueError(f"Number of channels {self.in_chns} invalid")
         sample["idx"] = idx
         sample["case"] = case
         return sample
