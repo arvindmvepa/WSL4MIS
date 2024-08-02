@@ -74,8 +74,7 @@ class BaseDataSets(Dataset):
                 image = h5f['image'][:]
                 label = h5f['label'][:]
             if self.in_chns == 3:
-                print("sample[image].shape ", sample['image'].shape)
-                sample['image'] = sample['image'].repeat(3, axis=-1)
+                sample['image'] = torch.stack([sample['image'].squeeze(0)] * 3, dim=0)
                 sample = {'image': image, 'label': label}
             elif self.in_chns != 1:
                 raise ValueError(f"Number of channels {self.in_chns} invalid")
