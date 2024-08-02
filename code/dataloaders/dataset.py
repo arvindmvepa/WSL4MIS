@@ -63,10 +63,6 @@ class BaseDataSets(Dataset):
         case = self.sample_list[idx]
         with h5py.File(case, 'r') as h5f:  # Using 'with' ensures the file is automatically closed after the block
             image = h5f['image'][:]
-            if self.in_chns == 3:
-                image = torch.stack([image.squeeze(0)] * 3, dim=0)
-            elif self.in_chns != 1:
-                raise ValueError(f"Number of channels {self.in_chns} invalid")
             if self.split == "train":
                 if self.sup_type == "random_walker":
                     label = pseudo_label_generator_acdc(image, h5f["scribble"][:])
@@ -77,6 +73,9 @@ class BaseDataSets(Dataset):
             else:
                 label = h5f['label'][:]
                 sample = {'image': image, 'label': label}
+        if self.in_chns == 3:
+            print(sample['image'].shape)
+            sample['image'] = torch.stack([sample['image'].squeeze(0)] * 3, dim=0)
         sample["idx"] = idx
         sample["case"] = case
         return sample
