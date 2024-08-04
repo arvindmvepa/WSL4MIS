@@ -51,7 +51,7 @@ def calculate_bs_metric_percase(pred, gt, num_bootstraps=1000, seed=0):
     return bs_dice_results, bs_hd95_results
 
 
-def test_single_volume(image, label, net, classes, patch_size=[256, 256], in_chns=3, num_bootstraps=None, seed=0, gpus="cuda:0"):
+def test_single_volume(image, label, net, classes, patch_size=[256, 256], in_chns=1, num_bootstraps=None, seed=0, gpus="cuda:0"):
     image = image.squeeze(0).cpu().detach().numpy()
     label = label.squeeze(0).cpu().detach().numpy()
     if len(image.shape) == 3:
