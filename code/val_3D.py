@@ -53,8 +53,10 @@ def calculate_bs_metric_percase(pred, gt, num_bootstraps=1000, seed=0):
 
 def test_single_volume(image, label, net, classes, patch_size=[16, 256, 256], in_chns=1, num_bootstraps=None, seed=0,
                        gpus="cuda:0"):
+    print("image.shape: ", image.shape)
     image = image.squeeze(0).cpu().detach().numpy()
     label = label.squeeze(0).cpu().detach().numpy()
+
     if len(image.shape) == 3:
         z, x, y = image.shape[0], image.shape[1], image.shape[2]
         image = zoom(
@@ -65,6 +67,7 @@ def test_single_volume(image, label, net, classes, patch_size=[16, 256, 256], in
             input = input.unsqueeze(0).float().to(gpus)
         else:
             input = input.unsqueeze(0).unsqueeze(0).float().to(gpus)
+        print("after transform, image.shape: ", image.shape)
         net.eval()
         with torch.no_grad():
             out = torch.argmax(torch.softmax(net(input), dim=1), dim=1).squeeze(0)
