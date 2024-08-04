@@ -63,7 +63,6 @@ class BaseDataSets(Dataset):
         case = self.sample_list[idx]
         with h5py.File(case, 'r') as h5f:  # Using 'with' ensures the file is automatically closed after the block
             image = h5f['image'][:]
-            print("before transform, image.shape: {}".format(image.shape))
             if self.split == "train":
                 if self.sup_type == "random_walker":
                     label = pseudo_label_generator_acdc(image, h5f["scribble"][:])
@@ -74,7 +73,6 @@ class BaseDataSets(Dataset):
             else:
                 label = h5f['label'][:]
                 sample = {'image': image, 'label': label}
-            print("after transform, sample[image].shape: {}".format(sample['image'].shape))
         if self.in_chns == 3:
             sample['image'] = torch.stack([sample['image'].squeeze(0)] * 3, dim=0)
         sample["idx"] = idx
@@ -112,11 +110,8 @@ class RandomGenerator(object):
         # label = lab[ind, ...]
         if self.data_type == "3d":
             z, x, y = image.shape
-            print("prior to zoom, image.shape: ", image.shape)
             image = zoom(image, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
-            print("progress image.shape: ", image.shape)
             image = image[np.newaxis, ...]
-            print("progress2 image.shape: ", image.shape)
             image = torch.from_numpy(image.astype(np.float32))
         else:
             if random.random() > 0.5:
@@ -135,14 +130,12 @@ class RandomGenerator(object):
                 image = torch.from_numpy(image.astype(np.float32)).permute(2, 0, 1)
             else:
                 raise ValueError("Invalid input shape")
-        print("label.shape: ", label.shape)
         if self.data_type == "3d":
             label = zoom(label, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
             label = torch.from_numpy(label.astype(np.float32))
         else:
             label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
             label = torch.from_numpy(label.astype(np.uint8))
-        print("after transform, label.shape: ", label.shape)
 
         sample = {'image': image, 'label': label}
         return sample
