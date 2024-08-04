@@ -44,7 +44,7 @@ class unet_3D(nn.Module):
 
         self.conv4 = UnetConv3(filters[2], filters[3], self.is_batchnorm, kernel_size=(
             3, 3, 3), padding_size=(1, 1, 1))
-        self.maxpool4 = nn.MaxPool3d(kernel_size=(2, 2, 2))
+        self.maxpool4 = nn.MaxPool3d(kernel_size=(1, 2, 2))
 
         self.center = UnetConv3(filters[3], filters[4], self.is_batchnorm, kernel_size=(
             3, 3, 3), padding_size=(1, 1, 1))
