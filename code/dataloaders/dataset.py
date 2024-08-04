@@ -101,8 +101,9 @@ def random_rotate(image, label, cval):
 
 
 class RandomGenerator(object):
-    def __init__(self, output_size):
+    def __init__(self, output_size, data_type="2d"):
         self.output_size = output_size
+        self.data_type = data_type
 
     def __call__(self, sample):
         image, label = sample['image'], sample['label']
@@ -117,6 +118,7 @@ class RandomGenerator(object):
             else:
                 image, label = random_rotate(image, label, cval=0)
         x, y = image.shape[:2]
+        print("image.shape: ", image.shape)
         if len(image.shape) == 2:
             image = zoom(image, (self.output_size[0] / x, self.output_size[1] / y), order=0)
             image = torch.from_numpy(image.astype(np.float32)).unsqueeze(0)
@@ -125,7 +127,10 @@ class RandomGenerator(object):
             image = torch.from_numpy(image.astype(np.float32)).permute(2, 0, 1)
         else:
             raise ValueError("Invalid input shape")
-        label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
+        if self.data_type == "3d":
+            label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), 1, order=0)
+        else:
+            label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
         label = torch.from_numpy(label.astype(np.uint8))
 
         sample = {'image': image, 'label': label}
