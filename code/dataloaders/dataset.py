@@ -145,6 +145,8 @@ class RandomGenerator(object):
             image = zoom(image, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
             image = image[np.newaxis, ...]
             image = torch.from_numpy(image.astype(np.float32))
+            label = zoom(label, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
+            label = torch.from_numpy(label.astype(np.float32))
         else:
             if random.random() > 0.5:
                 image, label = random_rot_flip(image, label)
@@ -162,10 +164,6 @@ class RandomGenerator(object):
                 image = torch.from_numpy(image.astype(np.float32)).permute(2, 0, 1)
             else:
                 raise ValueError("Invalid input shape")
-        if self.data_type == "3d":
-            label = zoom(label, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
-            label = torch.from_numpy(label.astype(np.float32))
-        else:
             label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
             label = torch.from_numpy(label.astype(np.uint8))
 
