@@ -74,6 +74,9 @@ def test_single_volume(image, label, net, classes, patch_size=[16, 256, 256], in
     else:
         raise ValueError("Only image.shape==3 is supported for now")
 
+    print("prediction.shape: ", prediction.shape)
+    print("label.shape: ", label.shape)
+
     metric_list = []
     for i in range(1, classes):
         if isinstance(num_bootstraps, int):
