@@ -70,9 +70,12 @@ def test_single_volume(image, label, net, classes, patch_size=[16, 256, 256], in
         print("after transform, image.shape: ", image.shape)
         net.eval()
         with torch.no_grad():
-            out = torch.argmax(torch.softmax(net(input), dim=1), dim=1).squeeze(0)
+            out = net(input)
+            print("out.shape: ", out.shape)
+            out = torch.argmax(torch.softmax(out, dim=1), dim=1).squeeze(0)
             out = out.cpu().detach().numpy()
-            prediction = zoom(out, (patch_size[0] / z, patch_size[1] / x, patch_size[2] / y), order=0)
+            print("after transform, out.shape: ", out.shape)
+            prediction = out
             label = zoom(label, (patch_size[0] / z, patch_size[1] / x, patch_size[2] / y), order=0)
     else:
         raise ValueError("Only image.shape==3 is supported for now")
