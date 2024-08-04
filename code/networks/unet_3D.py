@@ -91,7 +91,9 @@ class unet_3D(nn.Module):
         print("maxpool4.shape: ", maxpool4.shape)
 
         center = self.center(maxpool4)
+        print("center1.shape: ", center.shape)
         center = self.dropout1(center)
+        print("center2.shape: ", center.shape)
         up4 = self.up_concat4(conv4, center)
         up3 = self.up_concat3(conv3, up4)
         up2 = self.up_concat2(conv2, up3)
