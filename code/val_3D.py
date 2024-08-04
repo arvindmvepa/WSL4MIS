@@ -73,9 +73,10 @@ def test_single_volume(image, label, net, classes, patch_size=[16, 256, 256], in
             out = out.cpu().detach().numpy()
             prediction = out
             # removing label resizing to ensure prediction has same dimensions as label
-            #label = zoom(label, (patch_size[0] / z, patch_size[1] / x, patch_size[2] / y), order=0)
-            prediction = zoom(prediction, (label.shape[0]/patch_size[0], label.shape[1]/patch_size[1],
-                                           label.shape[2]/patch_size[2]), order=0)
+            label = zoom(label, (patch_size[0] / z, patch_size[1] / x, patch_size[2] / y), order=0)
+            # commenting this out so metric are a little better
+            #prediction = zoom(prediction, (label.shape[0]/patch_size[0], label.shape[1]/patch_size[1],
+            #                               label.shape[2]/patch_size[2]), order=0)
     else:
         raise ValueError("Only image.shape==3 is supported for now")
 
