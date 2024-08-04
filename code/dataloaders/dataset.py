@@ -98,6 +98,31 @@ def random_rotate(image, label, cval):
     return image, label
 
 
+def random_rot_flip_3d(image, label):
+    # Randomly choose an axis to rotate around (0, 1, or 2)
+    k = np.random.randint(0, 4)
+    image = np.rot90(image, k, axes=(1, 2))
+    label = np.rot90(label, k, axes=(1, 2))
+
+    # Randomly choose an axis to flip (0, 1, or 2)
+    axis = np.random.randint(0, 3)
+    image = np.flip(image, axis=axis).copy()
+    label = np.flip(label, axis=axis).copy()
+
+    return image, label
+
+
+def random_rotate_3d(image, label, cval):
+    # Randomly choose an angle to rotate around height and width dimensions only
+    angle = np.random.randint(-20, 20)
+
+    # Rotate around the (1, 2) plane
+    image = ndimage.rotate(image, angle, axes=(1, 2), order=0, reshape=False)
+    label = ndimage.rotate(label, angle, axes=(1, 2), order=0, reshape=False, mode="constant", cval=cval)
+
+    return image, label
+
+
 class RandomGenerator(object):
     def __init__(self, output_size, data_type="2d"):
         self.output_size = output_size
@@ -105,14 +130,24 @@ class RandomGenerator(object):
 
     def __call__(self, sample):
         image, label = sample['image'], sample['label']
+        print("prior to transform, image shape: ", image.shape)
         # ind = random.randrange(0, img.shape[0])
         # image = img[ind, ...]
         # label = lab[ind, ...]
         if self.data_type == "3d":
+            if random.random() > 0.5:
+                image, label = random_rot_flip_3d(image, label)
+            elif random.random() > 0.5:
+                if 4 in np.unique(label):
+                    image, label = random_rotate_3d(image, label, cval=4)
+                else:
+                    image, label = random_rotate_3d(image, label, cval=0)
+            print("after transform, image shape: ", image.shape)
             z, x, y = image.shape
             image = zoom(image, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
             image = image[np.newaxis, ...]
             image = torch.from_numpy(image.astype(np.float32))
+            print("tensor image shape: ", image.shape)
         else:
             if random.random() > 0.5:
                 image, label = random_rot_flip(image, label)
