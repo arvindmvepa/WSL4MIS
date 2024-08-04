@@ -130,7 +130,6 @@ class RandomGenerator(object):
 
     def __call__(self, sample):
         image, label = sample['image'], sample['label']
-        print("prior to transform, image shape: ", image.shape)
         # ind = random.randrange(0, img.shape[0])
         # image = img[ind, ...]
         # label = lab[ind, ...]
@@ -142,12 +141,10 @@ class RandomGenerator(object):
                     image, label = random_rotate_3d(image, label, cval=4)
                 else:
                     image, label = random_rotate_3d(image, label, cval=0)
-            print("after transform, image shape: ", image.shape)
             z, x, y = image.shape
             image = zoom(image, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
             image = image[np.newaxis, ...]
             image = torch.from_numpy(image.astype(np.float32))
-            print("tensor image shape: ", image.shape)
         else:
             if random.random() > 0.5:
                 image, label = random_rot_flip(image, label)
