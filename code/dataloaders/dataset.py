@@ -119,6 +119,7 @@ class RandomGenerator(object):
                 image, label = random_rotate(image, label, cval=0)
         if self.data_type == "3d":
             z, x, y = image.shape
+            print("prior to zoom, image.shape: ", image.shape)
             image = zoom(image, (1, self.output_size[0] / x, self.output_size[1] / y), order=0)
             print("progress image.shape: ", image.shape)
             image = image[np.newaxis, ...]
