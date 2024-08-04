@@ -53,7 +53,6 @@ def calculate_bs_metric_percase(pred, gt, num_bootstraps=1000, seed=0):
 
 def test_single_volume(image, label, net, classes, patch_size=[16, 256, 256], in_chns=1, num_bootstraps=None, seed=0,
                        gpus="cuda:0"):
-    print("image.shape: ", image.shape)
     image = image.squeeze(0).cpu().detach().numpy()
     label = label.squeeze(0).cpu().detach().numpy()
 
@@ -67,24 +66,18 @@ def test_single_volume(image, label, net, classes, patch_size=[16, 256, 256], in
             input = input.unsqueeze(0).float().to(gpus)
         else:
             input = input.unsqueeze(0).unsqueeze(0).float().to(gpus)
-        print("after transform, image.shape: ", image.shape)
         net.eval()
         with torch.no_grad():
             out = net(input)
-            print("out.shape: ", out.shape)
             out = torch.argmax(torch.softmax(out, dim=1), dim=1).squeeze(0)
             out = out.cpu().detach().numpy()
-            print("after transform, out.shape: ", out.shape)
             prediction = out
+            # removing label resizing to ensure prediction has same dimensions as label
             #label = zoom(label, (patch_size[0] / z, patch_size[1] / x, patch_size[2] / y), order=0)
             prediction = zoom(prediction, (label.shape[0]/patch_size[0], label.shape[1]/patch_size[1],
                                            label.shape[2]/patch_size[2]), order=0)
-            print("prediction.shape: ", prediction.shape)
     else:
         raise ValueError("Only image.shape==3 is supported for now")
-
-    print("prediction.shape: ", prediction.shape)
-    print("label.shape: ", label.shape)
 
     metric_list = []
     for i in range(1, classes):
