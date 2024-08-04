@@ -110,13 +110,6 @@ class RandomGenerator(object):
         # ind = random.randrange(0, img.shape[0])
         # image = img[ind, ...]
         # label = lab[ind, ...]
-        if random.random() > 0.5:
-            image, label = random_rot_flip(image, label)
-        elif random.random() > 0.5:
-            if 4 in np.unique(label):
-                image, label = random_rotate(image, label, cval=4)
-            else:
-                image, label = random_rotate(image, label, cval=0)
         if self.data_type == "3d":
             z, x, y = image.shape
             print("prior to zoom, image.shape: ", image.shape)
@@ -126,6 +119,13 @@ class RandomGenerator(object):
             print("progress2 image.shape: ", image.shape)
             image = torch.from_numpy(image.astype(np.float32))
         else:
+            if random.random() > 0.5:
+                image, label = random_rot_flip(image, label)
+            elif random.random() > 0.5:
+                if 4 in np.unique(label):
+                    image, label = random_rotate(image, label, cval=4)
+                else:
+                    image, label = random_rotate(image, label, cval=0)
             x, y = image.shape[:2]
             if len(image.shape) == 2:
                 image = zoom(image, (self.output_size[0] / x, self.output_size[1] / y), order=0)
