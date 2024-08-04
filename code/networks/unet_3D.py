@@ -44,7 +44,7 @@ class unet_3D(nn.Module):
 
         self.conv4 = UnetConv3(filters[2], filters[3], self.is_batchnorm, kernel_size=(
             3, 3, 3), padding_size=(1, 1, 1))
-        self.maxpool4 = nn.MaxPool3d(kernel_size=(1, 2, 2))
+        self.maxpool4 = nn.MaxPool3d(kernel_size=(2, 2, 2))
 
         self.center = UnetConv3(filters[3], filters[4], self.is_batchnorm, kernel_size=(
             3, 3, 3), padding_size=(1, 1, 1))
@@ -69,31 +69,21 @@ class unet_3D(nn.Module):
                 init_weights(m, init_type='kaiming')
 
     def forward(self, inputs):
-        print("inputs.shape: ", inputs.shape)
         conv1 = self.conv1(inputs)
-        print("conv1.shape: ", conv1.shape)
         maxpool1 = self.maxpool1(conv1)
-        print("maxpool1.shape: ", maxpool1.shape)
 
         conv2 = self.conv2(maxpool1)
-        print("conv2.shape: ", conv2.shape)
         maxpool2 = self.maxpool2(conv2)
-        print("maxpool2.shape: ", maxpool2.shape)
 
         conv3 = self.conv3(maxpool2)
-        print("conv3.shape: ", conv3.shape)
         maxpool3 = self.maxpool3(conv3)
-        print("maxpool3.shape: ", maxpool3.shape)
 
         conv4 = self.conv4(maxpool3)
-        print("conv4.shape: ", conv4.shape)
         maxpool4 = self.maxpool4(conv4)
-        print("maxpool4.shape: ", maxpool4.shape)
 
         center = self.center(maxpool4)
-        print("center1.shape: ", center.shape)
         center = self.dropout1(center)
-        print("center2.shape: ", center.shape)
+
         up4 = self.up_concat4(conv4, center)
         up3 = self.up_concat3(conv3, up4)
         up2 = self.up_concat2(conv2, up3)

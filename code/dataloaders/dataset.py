@@ -120,7 +120,7 @@ class RandomGenerator(object):
         if self.data_type == "3d":
             z, x, y = image.shape
             print("prior to zoom, image.shape: ", image.shape)
-            image = zoom(image, (1, self.output_size[0] / x, self.output_size[1] / y), order=0)
+            image = zoom(image, (self.output_size[0] / z, self.output_size[1] / x, self.output_size[2] / y), order=0)
             print("progress image.shape: ", image.shape)
             image = image[np.newaxis, ...]
             print("progress2 image.shape: ", image.shape)
@@ -137,11 +137,12 @@ class RandomGenerator(object):
                 raise ValueError("Invalid input shape")
         print("label.shape: ", label.shape)
         if self.data_type == "3d":
-            label = zoom(label, (self.output_size[0] / x, 1, self.output_size[1] / y), order=0)
+            label = zoom(label, (self.output_size[1] / x, self.output_size[0] / z, self.output_size[2] / y), order=0)
             label = torch.from_numpy(label.astype(np.float32)).permute(1, 0, 2)
         else:
             label = zoom(label, (self.output_size[0] / x, self.output_size[1] / y), order=0)
             label = torch.from_numpy(label.astype(np.uint8))
+        print("after transform, label.shape: ", label.shape)
 
         sample = {'image': image, 'label': label}
         return sample
