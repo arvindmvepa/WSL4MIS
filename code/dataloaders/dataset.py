@@ -121,7 +121,7 @@ class RandomGenerator(object):
             z, x, y = image.shape
             image = zoom(image, (1, self.output_size[0] / x, self.output_size[1] / y), order=0)
             print("progress image.shape: ", image.shape)
-            image = image[:, np.newaxis]
+            image = image[np.newaxis, ...]
             print("progress2 image.shape: ", image.shape)
             image = torch.from_numpy(image.astype(np.float32))
         else:
