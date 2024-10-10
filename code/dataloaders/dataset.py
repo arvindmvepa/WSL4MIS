@@ -73,7 +73,7 @@ class BaseDataSets(Dataset):
             else:
                 label = h5f['label'][:]
                 sample = {'image': image, 'label': label}
-        if self.in_chns == 3 and len(sample['image'].shape) == 2:
+        if self.in_chns == 3 and ((len(sample['image'].shape) == 2) or (len(sample['image'].shape) == 3 and sample['image'].shape[0] == 1)):
             sample['image'] = torch.stack([sample['image'].squeeze(0)] * 3, dim=0)
         sample["idx"] = idx
         sample["case"] = case
